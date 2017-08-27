@@ -291,6 +291,22 @@ function! fzf#vim#files(dir, ...)
 endfunction
 
 " ------------------------------------------------------------------
+" AllFiles
+" ------------------------------------------------------------------
+function! fzf#vim#all_files(dir, ...)
+  " Write out all the historical files to a temp file, and use a source
+  " command that both cats that tempfile and runs the file finder.
+  let historylist = s:all_files()
+  let historyfile = tempname()
+  call writefile(historylist, historyfile)
+  let cmd = '( ( cat ' . shellescape(historyfile) . ' && rg --files ' . a:dir . ') | awk ''!seen[$0]++'' )'
+  return s:fzf('all_files', {
+  \ 'source':  cmd,
+  \ 'options': ['-m', '--header-lines', !empty(expand('%')), '--prompt', 'AllFiles> ']
+  \}, a:000)
+endfunction
+
+" ------------------------------------------------------------------
 " Lines
 " ------------------------------------------------------------------
 function! s:line_handler(lines)
